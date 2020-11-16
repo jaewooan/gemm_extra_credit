@@ -1,9 +1,19 @@
 export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 	 uniform double A[], uniform double B[], uniform double C[], uniform double alpha, uniform double beta) {
 	// YOUR IMPLEMENTATION HERE
+	uniform int nThreads = 4;
+	uniform int nRowsPerTask = m / nThreads;
+	launch[nCore] gemm_ispc_task(m, n, k, A, B, C, alpha, data, nRowsPerTask);
+}
 
-	foreach (i = 0 ... m){
-		for(uniform int j=0; j<n; j++){
+task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
+	 uniform double A[], uniform double B[], uniform double C[], uniform double alpha,
+	 uniform double beta, uniform int nRowsPerTask) {
+	// YOUR IMPLEMENTATION HERE
+	uniform int iStart = nRowsPerTask * (taskIndex - 1);
+	uniform int iEnd = (taskIndex == 4? m : nRowsPerTask * taskIndex);
+	foreach (i = iStart ... iEnd){
+		foreach(j=0 ... n){
 			double inner_prod = 0;
 			for(uniform int kk=0; kk<k; kk++){
 				inner_prod += A[i*k+kk] * B[kk*n+j];
