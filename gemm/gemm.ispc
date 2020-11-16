@@ -5,7 +5,7 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 	uniform int iStart = nRowsPerTask * (taskIndex - 1);
 	uniform int iEnd = (taskIndex == 4? m : nRowsPerTask * taskIndex);
 	foreach (i = iStart ... iEnd){
-		foreach(j=0 ... n){
+		for(uniform int j=0; j<n; j++){
 			double inner_prod = 0;
 			for(uniform int kk=0; kk<k; kk++){
 				inner_prod += A[i*k+kk] * B[kk*n+j];
