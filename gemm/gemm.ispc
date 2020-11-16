@@ -3,7 +3,7 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 	 uniform double beta, uniform int nRowsPerTask) {
 	// YOUR IMPLEMENTATION HERE
 	uniform int iStart = nRowsPerTask * (taskIndex - 1);
-	uniform int iEnd = (taskIndex == 4? m : nRowsPerTask * taskIndex);
+	uniform int iEnd = (taskIndex == 3? m : nRowsPerTask * taskIndex);
 	foreach (i = iStart ... iEnd){
 		for(uniform int j=0; j<n; j++){
 			double inner_prod = 0;
