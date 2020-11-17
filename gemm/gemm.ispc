@@ -6,14 +6,15 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 	 uniform int iEnd = (taskIndex == 3? m : nRowsPerTask * (taskIndex + 1));
 	// uniform int iStart = taskIndex;
 	// uniform int iEnd = (taskIndex == 3? m : nRowsPerTask * taskIndex);
-	for (uniform int i=iStart; i<iEnd; i+=programCount){
-		int idx = i + programIndex;
+	//for (uniform int i=iStart; i<iEnd; i+=programCount){
+	foreach (i = iStart ... iEnd){
+		//int idx = i + programIndex;
 		for(uniform int j=0; j<n; j++){
 			double inner_prod = 0;
 			for(uniform int kk=0; kk<k; kk++){
-				inner_prod += A[idx*k+kk] * B[kk*n+j];
+				inner_prod += A[i*k+kk] * B[kk*n+j];
 			}
-			C[idx*n+j] = alpha * inner_prod + beta * C[idx*n+j];
+			C[i*n+j] = alpha * inner_prod + beta * C[i*n+j];
 		}
 	}
 }
