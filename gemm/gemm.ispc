@@ -9,7 +9,7 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 	// uniform int jStart = (taskIndex < 2? 0 : nRowsPerTask);
 	// uniform int jEnd = (jStart == 0? nRowsPerTask : n);
 	uniform int nGroup = m*m / 1000000 * 3 + 1;
-	int iRow = iGroup / nGroup;
+	uniform int iRow = iGroup / nGroup;
 	uniform int iGroupStart = iRow * nPerTask;
 	uniform int iGroupEnd = (iRow < nGroup - 1? iGroupStart + nPerTask : m);
 	uniform int jGroupStart = nPerTask * (iGroup % nGroup);
@@ -40,7 +40,7 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 	uniform int nThreads = 8;
 	uniform int nGroup = m*m / 1000000 * 3 + 1;
 	uniform int nPerTask = m / nGroup;//8;
-	for(int iGroup = 0; iGroup < nGroup * nGroup; iGroup++){
+	for(uniform int iGroup = 0; iGroup < nGroup * nGroup; iGroup++){
 		launch[nThreads] gemm_ispc_task(m, n, k, A, B, C, alpha, beta, nPerTask, iGroup);
 	}
 }
