@@ -2,8 +2,8 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 	 uniform double A[], uniform double B[], uniform double C[], uniform double alpha,
 	 uniform double beta, uniform int nRowsPerTask) {
 	// YOUR IMPLEMENTATION HERE
-	 uniform int iStart = nRowsPerTask * (taskIndex - 1);
-	 uniform int iEnd = (taskIndex == 3? m : nRowsPerTask * taskIndex);
+	 uniform int iStart = nRowsPerTask * taskIndex;
+	 uniform int iEnd = (taskIndex == 3? m : nRowsPerTask * (taskIndex + 1));
 	// uniform int iStart = taskIndex;
 	// uniform int iEnd = (taskIndex == 3? m : nRowsPerTask * taskIndex);
 	for (uniform int i=iStart; i<iEnd; i+=programCount){
