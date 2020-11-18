@@ -57,7 +57,7 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 	// Save
 	for(uniform int v = 0; v < rowBlock; v++){
 		for(uniform int h = 0; h < colBlock; h++){
-			int A_idx = idx*n+jStart+h;
+			int A_idx = (iStartBlock + v)*n+jStart+h;
 			C[A_idx] = alpha * unit_block[v][h] + beta * C[A_idx];
 		}
 	}
