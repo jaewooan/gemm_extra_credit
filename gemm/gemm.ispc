@@ -1,43 +1,35 @@
-uniform int rowGroup = 100; // num element = row*col + m*row + col * m << 1000000
-uniform int colGroup = 4; // number of ALUs
-uniform int nThreads = 8;
-uniform int rowBlock = 25; //rowGroup / nThreads; // 25
-uniform int colBlock = 4; //colGroup;     // 4
-
 task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 	 uniform double A[], uniform double B[], uniform double C[], uniform double alpha,
-	 uniform double beta, uniform int iStartGroup, uniform int intv_, uniform int iEndGroup, 
-	 uniform int jStartBlock) {
+	 uniform double beta, uniform int nPerTask, uniform int iGroup) {
 	// YOUR IMPLEMENTATION HERE
-	uniform double unit_block[25][4];
-	uniform int iStartBlock = iStartGroup + taskIndex * intv_;  // 200+49 = 249 
-	uniform int iEndBlock = (taskIndex == 7 ? iEndGroup : iStartBlock + intv_); //256 
-	uniform int intvBlock = iEndBlock - iStartBlock;
+	// uniform int iStart = nRowsPerTask * taskIndex;
+	// uniform int iEnd = (taskIndex == 8? m : nRowsPerTask * (taskIndex + 1));
+	// uniform int iStart = (taskIndex % 2) * nRowsPerTask;
+	// uniform int iEnd = (iStart == 0? nRowsPerTask : m);
+	// uniform int jStart = (taskIndex < 2? 0 : nRowsPerTask);
+	// uniform int jEnd = (jStart == 0? nRowsPerTask : n);
+	uniform int nGroup = m*m / 1000000 * 3 + 1;
+	uniform int iRow = iGroup / nGroup;
+	uniform int iGroupStart = iRow * nPerTask;
+	uniform int iGroupEnd = (iRow < nGroup - 1? iGroupStart + nPerTask : m);
+	uniform int jGroupStart = nPerTask * (iGroup % nGroup);
+	uniform int jGroupEnd = (iGroup % nGroup < nGroup - 1? jGroupStart + nPerTask : m);
+	uniform int nRowsPerTask = (iGroupEnd - iGroupStart)/2;
+	uniform int nColsPerTask = (jGroupEnd - jGroupStart)/4;
 
-	// Initialization
-	//uniform double A_target[rowBlock][k];
-	for(uniform int v = 0; v < rowBlock; v++){ //25
-		foreach(h = 0 ... colBlock){ //4
-			unit_block[v][h] = 0;
-		}
-		/*for(uniform kk = 0; kk < k; kk++){
-			A_target[v][kk] = A[(iStartBlock + v) * k + kk];
-		}*/
-	}
-
-	// Multication
-	for(uniform int v = 0; v < intvBlock; v++){ //25
-		for(uniform int kk = 0; kk < k; kk++){ // 256
-			foreach(h = 0 ... colBlock){ //4
-				unit_block[v][h] += A[(iStartBlock + v) * k + kk] * B[kk*n+jStartBlock+h];
+	uniform int iRowBlock = taskIndex / 4;
+	uniform int iStart = iGroupStart + iRowBlock * nRowsPerTask;
+	uniform int iEnd = (iStart == iGroupStart? iGroupStart + nRowsPerTask : iGroupEnd);
+	uniform int jStart = jGroupStart + nColsPerTask * (taskIndex % 4);
+	uniform int jEnd = (taskIndex % 4 == 3? jGroupEnd : jStart + nColsPerTask);
+	foreach (i = iStart ... iEnd){
+		for(uniform int j=jStart; j<jEnd; j++){
+		//for(uniform int j=0; j<n; j++){
+			double inner_prod = 0;
+			for(uniform int kk=0; kk<k; kk++){
+				inner_prod += A[i*k+kk] * B[kk*n+j];
 			}
-		}
-	}
-
-	// Save
-	for(uniform int v = 0; v < intvBlock; v++){
-		foreach(h = 0 ... colBlock){ //4
-			C[(iStartBlock + v)*n+jStartBlock+h] = alpha * unit_block[v][h] + beta * C[(iStartBlock + v)*n+jStartBlock+h];
+			C[i*n+j] = alpha * inner_prod + beta * C[i*n+j];
 		}
 	}
 }
@@ -46,16 +38,10 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 	 uniform double A[], uniform double B[], uniform double C[], uniform double alpha, 
 	 uniform double beta) {
 	// YOUR IMPLEMENTATION HERE
-	uniform int nRowGroup = (m - 1) / rowGroup + 1; //2
-	uniform int nColGroup = (m - 1) / colGroup + 1; //64
-	for(uniform int iGroup = 0; iGroup < nRowGroup * nColGroup; iGroup++){
-		uniform int iRowGroup = iGroup / nColGroup; // 0~0, 1~1 -> 1
-		uniform int jColGroup = iGroup % nColGroup; // 0~63, 0~63 -> 63
-		uniform int iStartGroup = iRowGroup * rowGroup; // 200
-		uniform int iEndGroup = (iRowGroup == nRowGroup - 1 ? m : iStartGroup + rowGroup); // 256
-		uniform int jStart = jColGroup * colGroup; //252
-		uniform int nRowElementGroup = iEndGroup - iStartGroup; //56
-		uniform int intv_ = nRowElementGroup / nThreads; // 56/8 = 7 
-		launch[nThreads] gemm_ispc_task(m, n, k, A, B, C, alpha, beta, iStartGroup, intv_, iEndGroup, jStart;
+	uniform int nThreads = 8;
+	uniform int nGroup = m*m / 1000000 * 3 + 1;
+	uniform int nPerTask = m / nGroup;//8;
+	for(uniform int iGroup = 0; iGroup < nGroup * nGroup; iGroup++){
+		launch[nThreads] gemm_ispc_task(m, n, k, A, B, C, alpha, beta, nPerTask, iGroup);
 	}
 }
