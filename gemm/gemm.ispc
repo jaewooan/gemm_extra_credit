@@ -55,7 +55,7 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 		uniform int iEndGroup = (iRowGroup == nRowGroup - 1 ? m : iStartGroup + rowGroup); // 256
 		uniform int jStart = jColGroup * colGroup; //252
 		uniform int nRowElementGroup = iEndGroup - iStartGroup; //56
-		uniform int intvBlock = nRowElementGroup / nThreads; // 56/8 = 7 
+		uniform int intv_ = nRowElementGroup / nThreads; // 56/8 = 7 
 		launch[nThreads] gemm_ispc_task(m, n, k, A, B, C, alpha, beta, iStartGroup, intv_, iEndGroup, jStartBlock);
 	}
 }
