@@ -25,7 +25,7 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 	uniform int jColGroup = iGroup % nColGroup;
 
 	uniform int iStartGroup = iRowGroup * rowGroup;
-	uniform int iEndGroup = (iRowGroup == nRowGroup - 1 ? m : iStart + rowBlock);
+	uniform int iEndGroup = (iRowGroup == nRowGroup - 1 ? m : iStartGroup + rowBlock);
 	uniform int jStart = jColGroup * colGroup;
 	uniform int jEnd = (jColGroup == nColGroup - 1 ? m : jStart + colGroup);
 
