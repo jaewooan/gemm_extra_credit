@@ -27,7 +27,18 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 		}
 	}*/
 	// SIMD with 4 ALUS
-	double inner_prod[8];
+	int iStart = iblock3 + taskIndex * L2_BLOCKSIZE_I;
+	int iEnd = iStart + L2_BLOCKSIZE_I;
+	foreach (i = iStart ... iEnd){
+		for(uniform int j=jStart; j<jEnd; j++){
+			double inner_prod = 0;
+			for(uniform int kk=0; kk<k; kk++){
+				inner_prod += A[i*k+kk] * B[kk*n+j];
+			}
+			C[i*n+j] = alpha * inner_prod + beta * C[i*n+j];
+		}
+	}
+/*	double inner_prod[8];
 	for (int i = 0; i < L2_BLOCKSIZE_I; i++){
 		int idx = iblock3 + taskIndex * L2_BLOCKSIZE_I + i;
 		foreach(j = 0 ... L2_BLOCKSIZE_J){
@@ -39,7 +50,7 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 			}
 			C[idx*n+jdx] = alpha * inner_prod[j] + beta * C[idx*n+jdx];
 		}
-	}
+	}*/
 
 	/*int i, j, kk;
 	for(i=0;i<m;i++){
