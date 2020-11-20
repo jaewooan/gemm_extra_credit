@@ -50,13 +50,13 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 	// YOUR IMPLEMENTATION HERE
 	uniform int nGroup = m / 256;
 	uniform int nPerTask = 256;
+	double A_L2[256][256];
+	double B_L2[256][256];
 
 	for (int iblock2 = 0; iblock2 < m; iblock2 += L2_BLOCKSIZE){ // 8 Threads
 		for (int jblock2 = 0; jblock2 < n; jblock2 += L2_BLOCKSIZE){ // 8 Threads
 			for (int kblock2 = 0; kblock2 < k; kblock2 += L2_BLOCKSIZE){ // 8 Threads
 				// Save matrix in L2 blocks
-				double A_L2[256][256];
-				double B_L2[256][256];
 				for (int kk = 0; kk < L2_BLOCKSIZE; kk++){ 
 					int kdx = kblock2 + kk;
 					for (int i = 0; i < L2_BLOCKSIZE; i++){ 
