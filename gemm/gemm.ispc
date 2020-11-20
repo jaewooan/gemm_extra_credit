@@ -4,7 +4,7 @@ int L2_BLOCKSIZE = 256;
 int L1_BLOCKSIZE = 16;
 
 task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
-	 uniform double A_L2[], uniform double B_L2[], uniform double C[], uniform double alpha,
+	 double A_L2[], double B_L2[], double C[], uniform double alpha,
 	 uniform double beta, int iblock2, int jblock2, int kblock2) {
 	// YOUR IMPLEMENTATION HERE
 
