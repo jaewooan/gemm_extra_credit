@@ -24,7 +24,7 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 		foreach(j = jStart ... jEnd){
 			inner_prod[programIndex] = 0;
 			for(uniform kk = 0; kk < k; kk++){
-				inner_prod += A[i*k+kk] * B[kk*n+j+programIndex];
+				inner_prod[programIndex] += A[i*k+kk] * B[kk*n+j+programIndex];
 			}
 			C[i*n+j+programIndex] = alpha * inner_prod[programIndex] + beta * C[i*n+j+programIndex];
 		}
