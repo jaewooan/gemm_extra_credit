@@ -5,19 +5,22 @@ task void gemm_ispc_task( uniform int m, uniform int n, uniform int k,
 	// YOUR IMPLEMENTATION HERE
 
 	// 1 block is splited into 8 parts executed by 8 threads (2 rows x 4 cols)
-	uniform int iStart = iBlockStart + (int)(taskIndex / 4) * (int)((iBlockEnd - iBlockStart)/2); // starting row of each part
-	uniform int iEnd = (iStart == iBlockStart? iBlockStart + (int)((iBlockEnd - iBlockStart)/2) : iBlockEnd); // final row of each part
-	uniform int jStart = jBlockStart + (int)((jBlockEnd - jBlockStart)/4) * (taskIndex % 4); // starting col of each part
-	uniform int jEnd = (taskIndex % 4 == 3? jBlockEnd : jStart + (int)((jBlockEnd - jBlockStart)/4)); // final col of each part
+	//uniform int iStart = (int)(iBlockStart + (int)(taskIndex / 4) * (int)((iBlockEnd - iBlockStart)/2)); // starting row of each part
+	//uniform int iEnd = (int)(iStart == iBlockStart? iBlockStart + (int)((iBlockEnd - iBlockStart)/2) : iBlockEnd); // final row of each part
+	//uniform int jStart = (int)(jBlockStart + (int)((jBlockEnd - jBlockStart)/4) * (taskIndex % 4)); // starting col of each part
+	//uniform int jEnd = (int)(taskIndex % 4 == 3? jBlockEnd : jStart + (int)((jBlockEnd - jBlockStart)/4)); // final col of each part
 
 	// SIMD with 4 ALUS
-	foreach (i = iStart ... iEnd){
-		for(uniform int j=jStart; j<jEnd; j++){
-			double inner_prod = 0;
+	foreach (i = (int)(iBlockStart + (int)(taskIndex / 4) * (int)((iBlockEnd - iBlockStart)/2)) ... 
+	(int)(iStart == iBlockStart? iBlockStart + (int)((iBlockEnd - iBlockStart)/2) : iBlockEnd)){
+		for(uniform int j=(int)(jBlockStart + (int)((jBlockEnd - jBlockStart)/4) * (taskIndex % 4)); 
+		j<(int)(taskIndex % 4 == 3? jBlockEnd : jStart + (int)((jBlockEnd - jBlockStart)/4)); j++){
+			//double inner_prod = 0;
+			C[i*n+j] = beta * C[i*n+j];
 			for(uniform int kk=0; kk<k; kk++){
-				inner_prod += A[i*k+kk] * B[kk*n+j];
+				C[i*n+j] += A[i*k+kk] * B[kk*n+j];
 			}
-			C[i*n+j] = alpha * inner_prod + beta * C[i*n+j];
+			//C[i*n+j] = alpha * inner_prod;
 		}
 	}
 }
