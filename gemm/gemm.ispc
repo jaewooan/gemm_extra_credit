@@ -36,11 +36,12 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 					int idx = iblock2 + iblock1 + L1_BLOCKSIZE * taskIndex + i;
 					foreach(j = 0 ... L1_BLOCKSIZE){
 						int jdx = jblock2 + jblock1 + j;
-						inner_prod[j%8] = 0;
+						int j_ = k % 8;
+						inner_prod[j_] = 0;
 						for(int kk = 0; kk < L1_BLOCKSIZE; kk++){
-							inner_prod[j%8] += A_L1[i][kk] * B_L1[kk][j];
+							inner_prod[j_] += A_L1[i][kk] * B_L1[kk][j];
 						}
-						C[idx*n+jdx] = alpha * inner_prod[j%8] + beta * C[idx*n+jdx];
+						C[idx*n+jdx] = alpha * inner_prod[j_] + beta * C[idx*n+jdx];
 					}
 				}
 			}
