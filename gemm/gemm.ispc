@@ -19,11 +19,11 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 	for (int iblock2 = 0; iblock2 < m; iblock2 += L2_BLOCKSIZE){ // 8 Threads
 		for (int jblock2 = 0; jblock2 < n; jblock2 += L2_BLOCKSIZE){ // 8 Threads
 			for (int kblock2 = 0; kblock2 < k; kblock2 += L2_BLOCKSIZE){ // 8 Threads
-				for (int iblock1 = 0; iblock1 < L2_BLOCKSIZE; iblock1 += L1_BLOCKSIZE){ // 8 Threads
+				for (int iblock1 = 0; iblock1 < L2_BLOCKSIZE; iblock1 += L1_BLOCKSIZE*8){ // 8 Threads
 					for (int jblock1 = 0; jblock1 < L2_BLOCKSIZE; jblock1 += L1_BLOCKSIZE){ // 8 Threads
 						for (int kblock1 = 0; kblock1 < L2_BLOCKSIZE; kblock1 += L1_BLOCKSIZE){ // 8 Threads
 							for (int i = 0; i<L1_BLOCKSIZE; i++){ // 8 Threads
-								int idx = iblock2 + iblock1 + i; //taskIndex;
+								int idx = iblock2 + (iblock1 + taskIndex * L1_BLOCKSIZE) + i; //taskIndex;
 								for(int j = 0; j < L1_BLOCKSIZE; j+=SIMD_WIDTH){
 									int jdx = jblock2 + jblock1 + j + programIndex;
 									inner_prod[programIndex] = 0;
