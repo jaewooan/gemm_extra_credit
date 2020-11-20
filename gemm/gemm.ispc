@@ -7,7 +7,7 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 	 uniform double A[], uniform double B[], uniform double C[], uniform double alpha,
 	 uniform double beta, uniform int iblock3, uniform int jblock3, uniform int kblock3) {
 	// YOUR IMPLEMENTATION HERE
-	uniform double inner_prod[8]; // 8 WIDE SPMD
+	double inner_prod[8]; // 8 WIDE SPMD
 	for (uniform int iblock2 = 0; iblock2 < L3_BLOCKSIZE; iblock2 += L2_BLOCKSIZE*8){ // 8 Threads
 		for (uniform int jblock2 = 0; jblock2 < L3_BLOCKSIZE; jblock2 += L2_BLOCKSIZE){ // 8 Threads
 			for (uniform int kblock2 = 0; kblock2 < L3_BLOCKSIZE; kblock2 += L2_BLOCKSIZE){
@@ -29,7 +29,7 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 				for (uniform int i = 0; i < L2_BLOCKSIZE; i++){ // 8 Threads
 					uniform int idx = iblock3 + iblock2 + L2_BLOCKSIZE * taskIndex + i;
 					foreach(j = 0 ... L2_BLOCKSIZE){
-						uniform int jdx = jblock3 + jblock2 + j;
+						int jdx = jblock3 + jblock2 + j;
 						uniform int j_ = k % 8;
 						inner_prod[j_] = 0;
 						for(uniform int kk = 0; kk < L2_BLOCKSIZE; kk++){							
