@@ -5,7 +5,7 @@ int L1_BLOCKSIZE = 16;
 
 task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 	 uniform double A_L2[], uniform double B_L2[], uniform double C[], uniform double alpha,
-	 uniform double beta, uniform int iblock2, uniform int jblock2, uniform int kblock2) {
+	 uniform double beta, int iblock2, int jblock2, int kblock2) {
 	// YOUR IMPLEMENTATION HERE
 
 	double inner_prod[8]; // 8 WIDE SPMD
