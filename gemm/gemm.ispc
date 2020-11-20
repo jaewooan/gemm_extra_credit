@@ -34,7 +34,7 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 
 				for (int i = 0; i < L1_BLOCKSIZE; i++){ // 8 Threads
 					int idx = iblock2 + iblock1 + L1_BLOCKSIZE * taskIndex + i;
-					foreach(j ... L1_BLOCKSIZE){
+					foreach(j = 0 ... L1_BLOCKSIZE){
 						int jdx = jblock2 + jblock1 + j;
 						inner_prod[j%8] = 0;
 						for(int kk = 0; kk < L1_BLOCKSIZE; kk++){
