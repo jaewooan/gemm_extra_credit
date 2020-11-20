@@ -19,7 +19,7 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 	uniform int jEnd = (taskIndex % 4 == 3? jGroupEnd : jStart + nColsPerTask); // final col of each block
 
 	// 4 Wide
-	double[] inner_prod;
+	double inner_prod[4];
 	for (uniform int i = iStart; i<iEnd; i++){
 		foreach(j = jStart ... jEnd){
 			inner_prod[programIndex] = 0;
