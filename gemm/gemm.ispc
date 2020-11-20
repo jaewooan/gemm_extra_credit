@@ -1,45 +1,39 @@
 uniform int nThreads = 8;
 int SIMD_WIDTH = 8;
-uniform int L2_BLOCKSIZE = 256;
-uniform int L1_BLOCKSIZE = 16;
+uniform int L3_BLOCKSIZE = 256;
+uniform int L2_BLOCKSIZE = 16;
 
 task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
-	 uniform double A_L2[], uniform double B_L2[], uniform double C[], uniform double alpha,
-	 uniform double beta, int iblock2, int jblock2, int kblock2) {
+	 uniform double A_L3[], uniform double B_L3[], uniform double C[], uniform double alpha,
+	 uniform double beta, uniform int iblock3, uniform int jblock3, uniform int kblock3) {
 	// YOUR IMPLEMENTATION HERE
-
-	double inner_prod[8]; // 8 WIDE SPMD
-	for (int iblock1 = 0; iblock1 < L2_BLOCKSIZE; iblock1 += L1_BLOCKSIZE*8){ // 8 Threads
-		for (int jblock1 = 0; jblock1 < L2_BLOCKSIZE; jblock1 += L1_BLOCKSIZE){ // 8 Threads
-			for (int kblock1 = 0; kblock1 < L2_BLOCKSIZE; kblock1 += L1_BLOCKSIZE){
-				// Save matrix in L1 blocks
-
-				double A_L1[16*16];
-				for (int i = 0; i < L1_BLOCKSIZE; i++){ 
-					int idx = iblock1 + L1_BLOCKSIZE * taskIndex + i;
-					foreach (kk = 0 ... L1_BLOCKSIZE){
-						int kdx = kblock1 + kk;
-						A_L1[i*L1_BLOCKSIZE+kk] = A_L2[idx*L2_BLOCKSIZE+kdx];
+	uniform double inner_prod[8]; // 8 WIDE SPMD
+	for (uniform int iblock2 = 0; iblock2 < L3_BLOCKSIZE; iblock2 += L2_BLOCKSIZE*8){ // 8 Threads
+		for (uniform int jblock2 = 0; jblock2 < L3_BLOCKSIZE; jblock2 += L2_BLOCKSIZE){ // 8 Threads
+			for (uniform int kblock2 = 0; kblock2 < L3_BLOCKSIZE; kblock2 += L2_BLOCKSIZE){
+				// Save matrix in L2 Caches
+				//double A_L1[16*16];
+				for (uniform int i = 0; i < L2_BLOCKSIZE; i++){ 
+					foreach (kk = 0 ... L2_BLOCKSIZE){
+						prefetch_l2(A[(iblock3 + iblock2 + L2_BLOCKSIZE * taskIndex + i)*k+(kblock3 + kblock2 + kk)]);
 					}
 				}
 
-				double B_L1[16*16];
-				for (int kk = 0; kk < L1_BLOCKSIZE; kk++){ 
-					int kdx = kblock1 + kk;
-					foreach (j = 0 ... L1_BLOCKSIZE){ 
-						int jdx = jblock1 + j;
-						B_L1[kk*L1_BLOCKSIZE+j] = B_L2[kdx*L2_BLOCKSIZE+jdx];
+				//double B_L1[16*16];
+				for (uniform int kk = 0; kk < L2_BLOCKSIZE; kk++){ 
+					foreach (j = 0 ... L2_BLOCKSIZE){ 
+						prefetch_l2(B[(kblock3 + kblock2 + kk)*n+(jblock3 + jblock2 + j)]);
 					}
 				}
 
-				for (int i = 0; i < L1_BLOCKSIZE; i++){ // 8 Threads
-					int idx = iblock2 + iblock1 + L1_BLOCKSIZE * taskIndex + i;
-					foreach(j = 0 ... L1_BLOCKSIZE){
-						int jdx = jblock2 + jblock1 + j;
-						int j_ = k % 8;
+				for (uniform int i = 0; i < L2_BLOCKSIZE; i++){ // 8 Threads
+					uniform int idx = iblock3 + iblock2 + L2_BLOCKSIZE * taskIndex + i;
+					foreach(j = 0 ... L2_BLOCKSIZE){
+						uniform int jdx = jblock3 + jblock2 + j;
+						uniform int j_ = k % 8;
 						inner_prod[j_] = 0;
-						for(int kk = 0; kk < L1_BLOCKSIZE; kk++){
-							inner_prod[j_] += A_L1[i*L1_BLOCKSIZE+kk] * B_L1[kk*L1_BLOCKSIZE+j];
+						for(uniform int kk = 0; kk < L2_BLOCKSIZE; kk++){							
+							inner_prod[j_] += A[idx*k+(kblock3 + kblock2 + kk)] * B[(kblock3 + kblock2 + kk)*n+jdx];
 						}
 						C[idx*n+jdx] = alpha * inner_prod[j_] + beta * C[idx*n+jdx];
 					}
@@ -56,29 +50,25 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 	// YOUR IMPLEMENTATION HERE
 	uniform int nGroup = m / 256;
 	uniform int nPerTask = 256;
-	uniform double A_L2[256*256];
-	uniform double B_L2[256*256];
+	//uniform double A_L3[256*256];
+	//uniform double B_L3[256*256];
 
-	for (int iblock2 = 0; iblock2 < m; iblock2 += L2_BLOCKSIZE){ // 8 Threads
-		for (int jblock2 = 0; jblock2 < n; jblock2 += L2_BLOCKSIZE){ // 8 Threads
-			for (int kblock2 = 0; kblock2 < k; kblock2 += L2_BLOCKSIZE){ // 8 Threads
-				// Save matrix in L2 blocks
-				for(int i = 0; i < L2_BLOCKSIZE; i++){ 
-					int idx = iblock2 + i;
-					foreach (kk = 0 ... L2_BLOCKSIZE){ 
-						int kdx = kblock2 + kk;	
-						A_L2[i*L2_BLOCKSIZE+kk] = A[idx*k+kdx];
+	for (uniform int iblock3 = 0; iblock3 < m; iblock3 += L3_BLOCKSIZE){ // 8 Threads
+		for (uniform int jblock3 = 0; jblock3 < n; jblock3 += L3_BLOCKSIZE){ // 8 Threads
+			for (uniform int kblock3 = 0; kblock3 < k; kblock3 += L3_BLOCKSIZE){ // 8 Threads
+				// Save matrix in L3 cache
+				for(uniform int i = 0; i < L3_BLOCKSIZE; i++){ 
+					foreach (kk = 0 ... L3_BLOCKSIZE){ 
+						prefetch_l3(A[(iblock3 + i)*k+(kblock3 + kk)]);
 					}
 				}
 
-				for (int kk = 0; kk < L2_BLOCKSIZE; kk++){ 
-					int kdx = kblock2 + kk;
-					foreach(j = 0 ... L2_BLOCKSIZE){ 
-						int jdx = jblock2 + j;
-						B_L2[kk*L2_BLOCKSIZE+j] = B[kdx*n+jdx];
+				for (uniform int kk = 0; kk < L3_BLOCKSIZE; kk++){ 
+					foreach(j = 0 ... L3_BLOCKSIZE){ 
+						prefetch_l3(B[(kblock3 + kk)*n+(jblock3 + j)]);
 					}
 				}
-				launch[nThreads] gemm_ispc_task(m, n, k, A_L2, B_L2, C, alpha, beta, iblock2, jblock2, kblock2);
+				launch[nThreads] gemm_ispc_task(m, n, k, A_L3, B_L3, C, alpha, beta, iblock3, jblock3, kblock3);
 			}
 		}
 	}	
