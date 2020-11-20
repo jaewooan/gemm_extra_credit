@@ -15,14 +15,14 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 				//double A_L1[16*16];
 				for (uniform int i = 0; i < L2_BLOCKSIZE; i++){ 
 					foreach (kk = 0 ... L2_BLOCKSIZE){
-						prefetch_l2(A[(iblock3 + iblock2 + L2_BLOCKSIZE * taskIndex + i)*k+(kblock3 + kblock2 + kk)]);
+						prefetch_l2(&A[(iblock3 + iblock2 + L2_BLOCKSIZE * taskIndex + i)*k+(kblock3 + kblock2 + kk)]);
 					}
 				}
 
 				//double B_L1[16*16];
 				for (uniform int kk = 0; kk < L2_BLOCKSIZE; kk++){ 
 					foreach (j = 0 ... L2_BLOCKSIZE){ 
-						prefetch_l2(B[(kblock3 + kblock2 + kk)*n+(jblock3 + jblock2 + j)]);
+						prefetch_l2(&B[(kblock3 + kblock2 + kk)*n+(jblock3 + jblock2 + j)]);
 					}
 				}
 
@@ -59,13 +59,13 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 				// Save matrix in L3 cache
 				for(uniform int i = 0; i < L3_BLOCKSIZE; i++){ 
 					foreach (kk = 0 ... L3_BLOCKSIZE){ 
-						prefetch_l3(A[(iblock3 + i)*k+(kblock3 + kk)]);
+						prefetch_l3(&A[(iblock3 + i)*k+(kblock3 + kk)]);
 					}
 				}
 
 				for (uniform int kk = 0; kk < L3_BLOCKSIZE; kk++){ 
 					foreach(j = 0 ... L3_BLOCKSIZE){ 
-						prefetch_l3(B[(kblock3 + kk)*n+(jblock3 + j)]);
+						prefetch_l3(&B[(kblock3 + kk)*n+(jblock3 + j)]);
 					}
 				}
 				launch[nThreads] gemm_ispc_task(m, n, k, A_L3, B_L3, C, alpha, beta, iblock3, jblock3, kblock3);
