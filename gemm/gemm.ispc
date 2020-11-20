@@ -1,6 +1,6 @@
 uniform int nThreads = 8;
 int SIMD_WIDTH = 8;
-int L2_BLOCKSIZE = 256;
+uniform int L2_BLOCKSIZE = 256;
 int L1_BLOCKSIZE = 16;
 
 task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
