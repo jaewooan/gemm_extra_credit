@@ -4,7 +4,7 @@ int L2_BLOCKSIZE = 256;
 int L1_BLOCKSIZE = 16;
 
 task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
-	 uniform double A_L2[256][256], uniform double B_L2[256][256], uniform double C[], uniform double alpha,
+	 uniform double A_L2[], uniform double B_L2[], uniform double C[], uniform double alpha,
 	 uniform double beta, int iblock2, int jblock2, int kblock2) {
 	// YOUR IMPLEMENTATION HERE
 
@@ -19,11 +19,11 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 					int kdx = kblock1 + kk;
 					for (int i = 0; i < L1_BLOCKSIZE; i++){ 
 						int idx = iblock1 + L1_BLOCKSIZE * taskIndex + i;
-						A_L1[i][kk] = A_L2[idx][kdx];
+						A_L1[i][kk] = A_L2[idx*L2_BLOCKSIZE+kdx];
 					}
 					for (int j = 0; j < L1_BLOCKSIZE; j++){ 
 						int jdx = jblock1 + j;
-						B_L1[kk][j] = B_L2[kdx][jdx];
+						B_L1[kk][j] = B_L2[kdx*L2_BLOCKSIZE+jdx];
 					}
 				}
 
@@ -50,8 +50,8 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 	// YOUR IMPLEMENTATION HERE
 	uniform int nGroup = m / 256;
 	uniform int nPerTask = 256;
-	uniform double A_L2[256][256];
-	uniform double B_L2[256][256];
+	uniform double A_L2[256*256];
+	uniform double B_L2[256*256];
 
 	for (int iblock2 = 0; iblock2 < m; iblock2 += L2_BLOCKSIZE){ // 8 Threads
 		for (int jblock2 = 0; jblock2 < n; jblock2 += L2_BLOCKSIZE){ // 8 Threads
@@ -61,11 +61,11 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 					int kdx = kblock2 + kk;
 					for (int i = 0; i < L2_BLOCKSIZE; i+=SIMD_WIDTH){ 
 						int idx = iblock2 + i + programIndex;
-						A_L2[i][kk] = A[idx*k+kdx];
+						A_L2[i*L2_BLOCKSIZE+kk] = A[idx*k+kdx];
 					}
 					for (int j = 0; j < L2_BLOCKSIZE; j+=SIMD_WIDTH){ 
 						int jdx = jblock2 + j + programIndex;
-						B_L2[kk][j] = B[kdx*n+jdx];
+						B_L2[kk*L2_BLOCKSIZE+j] = B[kdx*n+jdx];
 					}
 				}
 				launch[nThreads] gemm_ispc_task(m, n, k, A_L2, B_L2, C, alpha, beta, iblock2, jblock2, kblock2);
