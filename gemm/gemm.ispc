@@ -1,4 +1,5 @@
-task void gemm_ispc_task( uniform double A[], uniform double B[], uniform double C[], uniform double alpha,
+task void gemm_ispc_task( uniform int m, uniform int n, uniform int k,
+	uniform double A[], uniform double B[], uniform double C[], uniform double alpha,
 	 uniform double beta, uniform int iBlockStart, uniform int iBlockEnd,
 	 uniform int jBlockStart, uniform int jBlockEnd) {
 	// YOUR IMPLEMENTATION HERE
@@ -51,7 +52,7 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 				}
 			}
 
-			launch[8] gemm_ispc_task(A, B, C, alpha, beta, iBlockStart, iBlockEnd, jBlockStart, jBlockEnd);
+			launch[8] gemm_ispc_task(m, n, k, A, B, C, alpha, beta, iBlockStart, iBlockEnd, jBlockStart, jBlockEnd);
 		}
 	}
 }
