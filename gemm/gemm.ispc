@@ -27,16 +27,17 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 		}
 	}*/
 	// SIMD with 4 ALUS
+	double inner_prod[8];
 	for (int i = 0; i < L2_BLOCKSIZE_I; i++){
 		int idx = iblock3 + taskIndex * L2_BLOCKSIZE_I + i;
-		for(int j = 0; j < L2_BLOCKSIZE_I; j++){
+		foreach(j = 0 ... L2_BLOCKSIZE_J){
 			int jdx = jblock3 + j;
-			double inner_prod = 0;
-			for(int kk=0; kk<k; kk++){
+			inner_prod[j] = 0;
+			for(int kk=0; kk<L2_BLOCKSIZE_K; kk++){
 				int kdx = kblock3 + kk;
-				inner_prod += A[idx*k+kdx] * B[kdx*n+jdx];
+				inner_prod[j] += A[idx*k+kdx] * B[kdx*n+jdx];
 			}
-			C[idx*n+jdx] = alpha * inner_prod + beta * C[idx*n+jdx];
+			C[idx*n+jdx] = alpha * inner_prod[j] + beta * C[idx*n+jdx];
 		}
 	}
 
