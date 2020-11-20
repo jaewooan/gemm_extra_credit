@@ -10,24 +10,24 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 	 uniform double beta, uniform int iblock3, uniform int jblock3, uniform int kblock3) {
 	// YOUR IMPLEMENTATION HERE
 	//double inner_prod[8]; // 8 WIDE SPMD
-	/*for (int iblock2 = 0; iblock2 < L2_BLOCKSIZE_I; iblock2++){
+	for (int iblock2 = 0; iblock2 < L2_BLOCKSIZE_I; iblock2++){
 		int idx = iblock3 + taskIndex * L2_BLOCKSIZE_I + iblock2;
 		for (int jblock2 = 0; jblock2 < L2_BLOCKSIZE_J; jblock2 ++){ 
 			int jdx = jblock3 + jblock2;
 			// Save C in L1 cache
 			//prefetch_l1(&C[idx*m+jdx]);
-			double C_scalar = 0;
+			double C_scalar[8];
 			foreach (kblock2 = 0 ... L2_BLOCKSIZE_K){
 				int kdx = kblock3 + kblock2; 
 				//prefetch_l2(&A[idx*k+kdx]);
 				//prefetch_l2(&Btrans[jdx*k+kdx]);
-				C_scalar +=  A[idx*k+kdx] * Btrans[jdx*k+kdx];
+				C_scalar[idx*m+jdx] +=  A[idx*k+kdx] * B[kdx*n+jdx];
 			}
-			C[idx*m+jdx] = alpha * C_scalar + beta * C[idx*m+jdx];
+			C[idx*m+jdx] = alpha * C_scalar[idx*m+jdx] + beta * C[idx*m+jdx];
 		}
-	}*/
+	}
 
-	int i, j, kk;
+	/*int i, j, kk;
 	for(i=0;i<m;i++){
 		for(j=0;j<n;j++){
 			double inner_prod = 0;
@@ -36,7 +36,7 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 			}
 			C[i*n+j] = alpha * inner_prod + beta * C[i*n+j];
 		}
-	}
+	}*/
 }
 
 export void gemm_ispc(uniform int m, uniform int n, uniform int k,
