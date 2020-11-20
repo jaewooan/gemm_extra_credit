@@ -18,12 +18,12 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 	uniform int jStart = jGroupStart + nColsPerTask * (taskIndex % 4); // starting col of each block
 	uniform int jEnd = (taskIndex % 4 == 3? jGroupEnd : jStart + nColsPerTask); // final col of each block
 
-	// 4 Wide
-	double inner_prod[4];
+	// 8 Wide
+	double inner_prod[8];
 	for (uniform int i = iStart; i<iEnd; i++){
 		foreach(j = jStart ... jEnd){
 			inner_prod[programIndex] = 0;
-			for(uniform kk = 0; kk < k; kk++){
+			for(uniform int kk = 0; kk < k; kk++){
 				inner_prod[programIndex] += A[i*k+kk] * B[kk*n+j+programIndex];
 			}
 			C[i*n+j+programIndex] = alpha * inner_prod[programIndex] + beta * C[i*n+j+programIndex];
