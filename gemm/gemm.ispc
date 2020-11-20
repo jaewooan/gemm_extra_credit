@@ -15,8 +15,6 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 	uniform int jGroupEnd = jGroupStart + nPerTask; // end element in column of each group
 
 	double inner_prod[8]; // 8 WIDE SPMD
-	double A_L1[16][16];
-	double B_L1[16][16];
 
 	for (int iblock2 = 0; iblock2 < m; iblock2 += L2_BLOCKSIZE){ // 8 Threads
 		for (int jblock2 = 0; jblock2 < n; jblock2 += L2_BLOCKSIZE){ // 8 Threads
