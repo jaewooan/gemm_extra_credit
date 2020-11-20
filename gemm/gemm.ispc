@@ -1,4 +1,4 @@
-int nThreads = 8;
+uniform int nThreads = 8;
 int SIMD_WIDTH = 8;
 int L2_BLOCKSIZE = 256;
 int L1_BLOCKSIZE = 16;
