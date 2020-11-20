@@ -22,7 +22,7 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 	for (uniform int i = iGroupStart; i<iGroupEnd; i += 8){ // 8 Threads
 		uniform int idx = i + taskIndex;
 		foreach(j = jStart ... jEnd){
-			uniform int jdx = j + programIndex;
+			int jdx = j + programIndex;
 			inner_prod[programIndex] = 0;
 			for(uniform int kk = 0; kk < k; kk++){
 				inner_prod[programIndex] += A[idx*k+kk] * B[kk*n+jdx];
