@@ -16,17 +16,18 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 			uniform int jdx = jblock3 + jblock2;
 			// Save C in L1 cache
 			prefetch_l1(&C[idx*m+jdx]);
-			double C_scalar = 0;
+			double C_scalar[1];
+			C_scalar[0] = 0;
 			for (uniform int kblock2 = 0; kblock2 < L3_BLOCKSIZE; kblock2 += L2_BLOCKSIZE_K*nThreads){
 				// Save matrix in L2 Caches
 				foreach (kk = 0 ... L2_BLOCKSIZE_K){
 					int kdx = kblock3 + kblock2 + L2_BLOCKSIZE_K * taskIndex + kk; 
 					prefetch_l2(&A[idx*k+kdx]);
 					prefetch_l2(&Btrans[jdx*k+kdx]);
-					C_scalar +=  A[idx*k+kdx] * Btrans[idx*k+kdx];
+					C_scalar[0] +=  A[idx*k+kdx] * Btrans[idx*k+kdx];
 				}
 			}
-			C[idx*m+jdx] = alpha * C_scalar + beta * C[idx*m+jdx];
+			C[idx*m+jdx] = alpha * C_scalar[0] + beta * C[idx*m+jdx];
 		}
 	}
 
