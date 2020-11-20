@@ -23,7 +23,7 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 					uniform int kdx = kblock3 + kblock2 + L2_BLOCKSIZE_K * taskIndex + kk; 
 					prefetch_l2(&A[idx*k+kdx]);
 					prefetch_l2(&Btrans[jdx*k+kdx]);
-					C_scalar += alpha * A[idx*k+kdx] * Btrans[idx*k+kdx]
+					C_scalar += alpha * A[idx*k+kdx] * Btrans[idx*k+kdx];
 				}
 			}
 			C[idx*m+jdx] = C_scalar;
@@ -36,8 +36,6 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 	 uniform double A[], uniform double B[], uniform double C[], uniform double alpha, 
 	 uniform double beta) {
 	// YOUR IMPLEMENTATION HERE
-	uniform int nGroup = m / 256;
-	uniform int nPerTask = 256;
 	//uniform double A_L3[256*256];
 	uniform double Btrans[256*256];
 
