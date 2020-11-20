@@ -55,10 +55,10 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 							for (int i = 0; i < L1_BLOCKSIZE; i++){ // 8 Threads
 								int idx = iblock2 + iblock1 + L1_BLOCKSIZE * taskIndex + i;
 								for(int j = 0; j < L1_BLOCKSIZE; j+=SIMD_WIDTH){
-									int jdx = jblock2 + jblock1 + j;
+									int jdx = jblock2 + jblock1 + j + programIndex;
 									inner_prod[programIndex] = 0;
 									for(int kk = 0; kk < L1_BLOCKSIZE; kk++){
-										inner_prod[programIndex] += A_L1[i][kk] * B_L1[kk][j];
+										inner_prod[programIndex] += A_L1[i][kk] * B_L1[kk][j+ programIndex];
 									}
 									C[idx*n+jdx] = alpha * inner_prod[programIndex] + beta * C[idx*n+jdx];
 								}
