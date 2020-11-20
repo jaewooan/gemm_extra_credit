@@ -59,12 +59,12 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 				// Save matrix in L2 blocks
 				for (int kk = 0; kk < L2_BLOCKSIZE; kk++){ 
 					int kdx = kblock2 + kk;
-					for (int i = 0; i < L2_BLOCKSIZE; i+=SIMD_WIDTH){ 
-						int idx = iblock2 + i + programIndex;
+					foreach(i = 0 ... L2_BLOCKSIZE){ 
+						int idx = iblock2 + i;
 						A_L2[i*L2_BLOCKSIZE+kk] = A[idx*k+kdx];
 					}
-					for (int j = 0; j < L2_BLOCKSIZE; j+=SIMD_WIDTH){ 
-						int jdx = jblock2 + j + programIndex;
+					foreach(j = 0 ... L2_BLOCKSIZE){ 
+						int jdx = jblock2 + j;
 						B_L2[kk*L2_BLOCKSIZE+j] = B[kdx*n+jdx];
 					}
 				}
