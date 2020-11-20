@@ -31,14 +31,14 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 	uniform int nPerBlock = m / nBlock;
 	for(uniform int iBlock = 0; iBlock < nBlock; iBlock++){
 		// Save matrix in L3 cache
+		uniform int iBlockStart = iBlock * nPerBlock; // starting element in row of each block
+		uniform int iBlockEnd = (iBlock < nBlock - 1? iBlockStart + nPerBlock : m); // final element in row of each block
 		for(uniform int i = iBlockStart; i < iBlockEnd; i++){ 
 			foreach (kk = 0 ... k){ 
 				prefetch_l3(&A[i*k+kk]);
 			}
 		}
 		for(uniform int jBlock = 0; jBlock < nBlock; jBlock++){
-			uniform int iBlockStart = iBlock * nPerBlock; // starting element in row of each block
-			uniform int iBlockEnd = (iBlock < nBlock - 1? iBlockStart + nPerBlock : m); // final element in row of each block
 			uniform int jBlockStart = jBlock * nPerBlock; // starting element in column of each block
 			uniform int jBlockEnd = (jBlock < nBlock - 1? jBlockStart + nPerBlock : m); // end element in column of each block
 
