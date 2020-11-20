@@ -64,9 +64,9 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 			for (int kblock2 = 0; kblock2 < k; kblock2 += L2_BLOCKSIZE){ // 8 Threads
 				// Save matrix in L2 blocks
 				for(int i = 0; i < L2_BLOCKSIZE; i++){ 
-					int kdx = kblock2 + kk;
+					int idx = iblock2 + i;
 					foreach (kk = 0 ... L2_BLOCKSIZE){ 
-						int idx = iblock2 + i;
+						int kdx = kblock2 + kk;	
 						A_L2[i*L2_BLOCKSIZE+kk] = A[idx*k+kdx];
 					}
 				}
