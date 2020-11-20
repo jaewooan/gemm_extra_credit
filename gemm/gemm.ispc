@@ -39,7 +39,7 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 						int j_ = k % 8;
 						inner_prod[j_] = 0;
 						for(int kk = 0; kk < L1_BLOCKSIZE; kk++){
-							inner_prod[j_] += A_L1[i][kk] * B_L1[kk][j];
+							inner_prod[j_] += A_L1[i*L1_BLOCKSIZE+kk] * B_L1[kk*L1_BLOCKSIZE+j];
 						}
 						C[idx*n+jdx] = alpha * inner_prod[j_] + beta * C[idx*n+jdx];
 					}
