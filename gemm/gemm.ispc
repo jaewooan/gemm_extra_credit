@@ -1,6 +1,5 @@
-task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
-	 uniform double A[], uniform double B[], uniform double C[], uniform double alpha,
-	 uniform double beta, uniform int nPerBlock, uniform int iBlockStart, uniform int iBlockEnd,
+task void gemm_ispc_task( uniform double A[], uniform double B[], uniform double C[], uniform double alpha,
+	 uniform double beta, uniform int iBlockStart, uniform int iBlockEnd,
 	 uniform int jBlockStart, uniform int jBlockEnd) {
 	// YOUR IMPLEMENTATION HERE
 
@@ -26,21 +25,19 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 	 uniform double A[], uniform double B[], uniform double C[], uniform double alpha, 
 	 uniform double beta) {
 	// YOUR IMPLEMENTATION HERE
-	uniform int nThreads = 8;
 	uniform int nBlock = m*m / 1000000 * 3 + 1;
-	uniform int nPerBlock = m / nBlock;
 	for(uniform int iBlock = 0; iBlock < nBlock; iBlock++){
 		// Save matrix in L3 cache
-		uniform int iBlockStart = iBlock * nPerBlock; // starting element in row of each block
-		uniform int iBlockEnd = (iBlock < nBlock - 1? iBlockStart + nPerBlock : m); // final element in row of each block
+		uniform int iBlockStart = iBlock * (int) (m / nBlock); // starting element in row of each block
+		uniform int iBlockEnd = (iBlock < nBlock - 1? iBlockStart + (int) (m / nBlock) : m); // final element in row of each block
 		for(uniform int i = iBlockStart; i < iBlockEnd; i++){ 
 			foreach (kk = 0 ... k){ 
 				prefetch_l3(&A[i*k+kk]);
 			}
 		}
 		for(uniform int jBlock = 0; jBlock < nBlock; jBlock++){
-			uniform int jBlockStart = jBlock * nPerBlock; // starting element in column of each block
-			uniform int jBlockEnd = (jBlock < nBlock - 1? jBlockStart + nPerBlock : m); // end element in column of each block
+			uniform int jBlockStart = jBlock * (int) (m / nBlock); // starting element in column of each block
+			uniform int jBlockEnd = (jBlock < nBlock - 1? jBlockStart + (int) (m / nBlock) : m); // end element in column of each block
 
 			for (uniform int kk = 0; kk < k; kk++){ 
 				foreach(j = jBlockStart ... jBlockEnd){
@@ -54,8 +51,7 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 				}
 			}
 
-			launch[nThreads] gemm_ispc_task(m, n, k, A, B, C, alpha, beta, nPerBlock, iBlockStart,
-											iBlockEnd, jBlockStart, jBlockEnd);
+			launch[8] gemm_ispc_task(A, B, C, alpha, beta, iBlockStart, iBlockEnd, jBlockStart, jBlockEnd);
 		}
 	}
 }
