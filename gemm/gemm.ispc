@@ -13,8 +13,8 @@ task void gemm_ispc_task(uniform int m, uniform int n, uniform int k,
 		for (int jblock1 = 0; jblock1 < L2_BLOCKSIZE; jblock1 += L1_BLOCKSIZE){ // 8 Threads
 			for (int kblock1 = 0; kblock1 < L2_BLOCKSIZE; kblock1 += L1_BLOCKSIZE){
 				// Save matrix in L1 blocks
-				double A_L1[8][8];
-				double B_L1[8][8];
+				double A_L1[16][16];
+				double B_L1[16][16];
 				for (int kk = 0; kk < L1_BLOCKSIZE; kk++){ 
 					int kdx = kblock1 + kk;
 					for (int i = 0; i < L1_BLOCKSIZE; i++){ 
