@@ -68,8 +68,7 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 						B_L2[kk][j] = B[kdx*n+jdx];
 					}
 				}
-				launch[nThreads] gemm_ispc_task(m, n, k, A_L2, B_L2, C, alpha, beta,
-				iblock2, jblock2, kblock2);
+				launch[nThreads] gemm_ispc_task(m, n, k, A_L2, B_L2, C, alpha, beta, iblock2, jblock2, kblock2);
 			}
 		}
 	}	
