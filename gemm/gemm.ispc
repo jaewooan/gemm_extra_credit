@@ -73,6 +73,12 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 
 	for (uniform int iblock3 = 0; iblock3 < m; iblock3 += L3_BLOCKSIZE){ // 8 Threads
 		for (uniform int jblock3 = 0; jblock3 < n; jblock3 += L3_BLOCKSIZE){ // 8 Threads
+			for (uniform int i = 0; i < L3_BLOCKSIZE; i++){ 
+				foreach(j = 0 ... L3_BLOCKSIZE){ 
+					prefetch_l3(&C[(iblock3 + i)*m+(jblock3 + j)]);
+					C[(iblock3 + i)*m+(jblock3 + j)] *= beta;
+				}
+			}
 			for (uniform int kblock3 = 0; kblock3 < k; kblock3 += L3_BLOCKSIZE){ // 8 Threads
 				// Save matrix in L3 cache
 				for(uniform int i = 0; i < L3_BLOCKSIZE; i++){ 
@@ -84,13 +90,6 @@ export void gemm_ispc(uniform int m, uniform int n, uniform int k,
 				for (uniform int kk = 0; kk < L3_BLOCKSIZE; kk++){ 
 					foreach(j = 0 ... L3_BLOCKSIZE){
 						prefetch_l3(&Btrans[(jblock3 + j)*k+(kblock3 + kk)]);
-					}
-				}
-
-				for (uniform int i = 0; i < L3_BLOCKSIZE; i++){ 
-					foreach(j = 0 ... L3_BLOCKSIZE){ 
-						prefetch_l3(&C[(iblock3 + i)*m+(jblock3 + j)]);
-						C[i*n+j] *= beta;
 					}
 				}
 
